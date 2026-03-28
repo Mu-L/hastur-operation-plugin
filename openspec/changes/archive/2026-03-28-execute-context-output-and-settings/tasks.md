@@ -29,8 +29,8 @@
 
 ## 6. Verification
 
-- [ ] 6.1 Manually verify in Godot editor: plugin loads without errors, Project Settings shows `hastur_operation/output_max_char_length` with default 800
-- [ ] 6.2 Test snippet execution with `executeContext.output()` calls and verify output display in dock
-- [ ] 6.3 Test truncation: output a value exceeding 800 chars and verify truncation warning appears
-- [ ] 6.4 Test full class mode with `execute(executeContext)` and `executeContext.output()` calls
-- [ ] 6.5 Test runtime error scenario with outputs collected before the error
+- [x] 6.1 Manually verify in Godot editor: plugin loads without errors, Project Settings shows `hastur_operation/output_max_char_length` with default 800
+- [x] 6.2 Test snippet execution with `executeContext.output()` calls and verify output display in dock
+- [x] 6.3 Test truncation: output a value exceeding 800 chars and verify truncation warning appears
+- [x] 6.4 Test full class mode with `execute(executeContext)` and `executeContext.output()` calls
+- [x] 6.5 Test runtime error scenario with outputs collected before the error
