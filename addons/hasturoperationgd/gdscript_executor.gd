@@ -71,10 +71,16 @@ func execute_code(code: String, execute_context: Dictionary = {}) -> Dictionary:
 			result.run_error = "Failed to instantiate script"
 		return result
 
+	_error_capturer.start_capture(script_path)
 	if is_full_class:
 		_execute_full_class(instance, execute_context, result)
 	else:
 		_execute_snippet(instance, execute_context, result)
+	captured_errors = _error_capturer.stop_capture()
+
+	if captured_errors.size() > 0:
+		result.run_success = false
+		result.run_error = "\n".join(captured_errors)
 
 	instance = null
 	return result
