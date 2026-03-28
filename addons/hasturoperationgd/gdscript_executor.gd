@@ -20,7 +20,8 @@ func execute_code(code: String, execute_context: Dictionary = {}) -> Dictionary:
 		"compile_success": false,
 		"compile_error": "",
 		"run_success": false,
-		"run_error": ""
+		"run_error": "",
+		"outputs": []
 	}
 
 	if code.strip_edges() == "":
@@ -71,12 +72,16 @@ func execute_code(code: String, execute_context: Dictionary = {}) -> Dictionary:
 			result.run_error = "Failed to instantiate script"
 		return result
 
+	var ctx = ExecutionContext.new()
+
 	_error_capturer.start_capture(script_path)
 	if is_full_class:
-		_execute_full_class(instance, execute_context, result)
+		_execute_full_class(instance, ctx, result)
 	else:
-		_execute_snippet(instance, execute_context, result)
+		_execute_snippet(instance, ctx, result)
 	captured_errors = _error_capturer.stop_capture()
+
+	result.outputs = ctx.get_outputs()
 
 	if captured_errors.size() > 0:
 		result.run_success = false
@@ -105,13 +110,13 @@ func _ensure_tool_annotation(code: String) -> String:
 	return "@tool\n" + code
 
 
-func _execute_snippet(instance: RefCounted, execute_context: Dictionary, result: Dictionary) -> void:
+func _execute_snippet(instance: RefCounted, execute_context: ExecutionContext, result: Dictionary) -> void:
 	instance.executeContext = execute_context
 	instance.run()
 	result.run_success = true
 
 
-func _execute_full_class(instance: RefCounted, execute_context: Dictionary, result: Dictionary) -> void:
+func _execute_full_class(instance: RefCounted, execute_context: ExecutionContext, result: Dictionary) -> void:
 	if not instance.has_method("execute"):
 		result.run_error = "Full class mode requires an 'execute(executeContext)' method"
 		return

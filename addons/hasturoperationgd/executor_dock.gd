@@ -54,4 +54,10 @@ func _display_result(result: Dictionary) -> void:
 		text += "Run: FAILED\n"
 		text += result.run_error + "\n"
 
+	if result.outputs.size() > 0:
+		text += "---\n"
+		text += "Output:\n"
+		for entry in result.outputs:
+			text += str(entry[0]) + ": " + str(entry[1]) + "\n"
+
 	_result_label.text = text

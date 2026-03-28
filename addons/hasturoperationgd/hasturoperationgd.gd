@@ -14,6 +14,7 @@ func _disable_plugin() -> void:
 
 
 func _enter_tree() -> void:
+	PluginSettings.register_settings()
 	_dock = EditorDock.new()
 	_dock.title = "Hastur Executor"
 	_dock.default_slot = EditorDock.DOCK_SLOT_LEFT_UL
