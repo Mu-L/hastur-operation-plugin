@@ -7,3 +7,75 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+
+[node name="CenterContainer" type="CenterContainer" parent="." unique_id=1809472787]
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+
+[node name="LoginPanel" type="PanelContainer" parent="CenterContainer" unique_id=1341847597]
+custom_minimum_size = Vector2(380, 280)
+layout_mode = 2
+
+[node name="MarginContainer" type="MarginContainer" parent="CenterContainer/LoginPanel" unique_id=957132642]
+layout_mode = 2
+theme_override_constants/margin_left = 24
+theme_override_constants/margin_top = 24
+theme_override_constants/margin_right = 24
+theme_override_constants/margin_bottom = 24
+
+[node name="VBoxContainer" type="VBoxContainer" parent="CenterContainer/LoginPanel/MarginContainer" unique_id=1710673344]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="Title" type="Label" parent="CenterContainer/LoginPanel/MarginContainer/VBoxContainer" unique_id=582928753]
+layout_mode = 2
+theme_override_font_sizes/font_size = 28
+text = "登录"
+horizontal_alignment = 1
+
+[node name="Spacer1" type="Control" parent="CenterContainer/LoginPanel/MarginContainer/VBoxContainer" unique_id=511950104]
+custom_minimum_size = Vector2(0, 16)
+layout_mode = 2
+
+[node name="UsernameRow" type="HBoxContainer" parent="CenterContainer/LoginPanel/MarginContainer/VBoxContainer" unique_id=2072752821]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="UsernameLabel" type="Label" parent="CenterContainer/LoginPanel/MarginContainer/VBoxContainer/UsernameRow" unique_id=1893925122]
+custom_minimum_size = Vector2(70, 30)
+layout_mode = 2
+text = "用户名:"
+vertical_alignment = 1
+
+[node name="UsernameInput" type="LineEdit" parent="CenterContainer/LoginPanel/MarginContainer/VBoxContainer/UsernameRow" unique_id=511307247]
+custom_minimum_size = Vector2(0, 30)
+layout_mode = 2
+size_flags_horizontal = 3
+placeholder_text = "请输入用户名"
+
+[node name="PasswordRow" type="HBoxContainer" parent="CenterContainer/LoginPanel/MarginContainer/VBoxContainer" unique_id=118214280]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="PasswordLabel" type="Label" parent="CenterContainer/LoginPanel/MarginContainer/VBoxContainer/PasswordRow" unique_id=1347483861]
+custom_minimum_size = Vector2(70, 30)
+layout_mode = 2
+text = "密码:"
+vertical_alignment = 1
+
+[node name="PasswordInput" type="LineEdit" parent="CenterContainer/LoginPanel/MarginContainer/VBoxContainer/PasswordRow" unique_id=841935491]
+custom_minimum_size = Vector2(0, 30)
+layout_mode = 2
+size_flags_horizontal = 3
+placeholder_text = "请输入密码"
+secret = true
+
+[node name="Spacer2" type="Control" parent="CenterContainer/LoginPanel/MarginContainer/VBoxContainer" unique_id=1595470325]
+custom_minimum_size = Vector2(0, 20)
+layout_mode = 2
+
+[node name="LoginButton" type="Button" parent="CenterContainer/LoginPanel/MarginContainer/VBoxContainer" unique_id=1339970327]
+custom_minimum_size = Vector2(0, 40)
+layout_mode = 2
+text = "登录"
