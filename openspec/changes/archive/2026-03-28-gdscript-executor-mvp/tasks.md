@@ -20,4 +20,4 @@
 
 - [x] 3.1 Update `addons/hasturoperationgd/hasturoperationgd.gd` — in `_enter_tree()`, create `EditorDock`, add the `executor_dock` control as child, set title "Hastur Executor", configure dock slot and layouts, call `add_dock()`
 - [x] 3.2 In `_exit_tree()`, call `remove_dock()` and `queue_free()` to clean up the dock
-- [ ] 3.3 Verify plugin loads in Godot editor without errors, dock appears when enabled and disappears when disabled
+- [x] 3.3 Verify plugin loads in Godot editor without errors, dock appears when enabled and disappears when disabled
