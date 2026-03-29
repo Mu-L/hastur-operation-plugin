@@ -1,3 +1,5 @@
+[中文文档](README.zh.md)
+
 # Hastur Operation Plugin
 
 A Godot editor plugin that lets you remotely execute arbitrary GDScript code snippets via an HTTP API.
