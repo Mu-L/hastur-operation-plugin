@@ -64,8 +64,8 @@ hastur-operation-plugin/
 │   └── package.json
 │
 └── .claude/skills/
-    └── godot-remote-executor/       # Coding agent 技能定义
-        └── SKILL.md                 # Agent 操控 Godot 的指令文档
+	└── godot-remote-executor/       # Coding agent 技能定义
+		└── SKILL.md                 # Agent 操控 Godot 的指令文档
 ```
 
 ## 使用方法
@@ -152,12 +152,12 @@ curl -s -X POST \
 {
   "success": true,
   "data": {
-    "request_id": "uuid",
-    "compile_success": true,
-    "compile_error": "",
-    "run_success": true,
-    "run_error": "",
-    "outputs": [["key", "value"]]
+	"request_id": "uuid",
+	"compile_success": true,
+	"compile_error": "",
+	"run_success": true,
+	"run_error": "",
+	"outputs": [["key", "value"]]
   }
 }
 ```
@@ -179,8 +179,8 @@ executeContext.output("child_count", str(scene.get_child_count()))
 extends Node
 
 func execute(executeContext):
-    var root = get_tree().root
-    executeContext.output("viewport_size", str(root.get_visible_rect().size))
+	var root = get_tree().root
+	executeContext.output("viewport_size", str(root.get_visible_rect().size))
 ```
 
 ## 安全提醒

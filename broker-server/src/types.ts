@@ -8,6 +8,7 @@ export interface ExecutorInfo {
 	supported_languages: string[]
 	connected_at: string
 	status: 'connected' | 'disconnected'
+	type: 'editor' | 'game'
 }
 
 export interface TcpMessage {

@@ -1,12 +1,14 @@
 ---
 name: godot-remote-executor
 description: |
-  Execute GDScript code on a running Godot editor via the Hastur broker-server HTTP API. Use this skill whenever the user wants to manipulate a Godot editor remotely — creating/modifying scenes, adjusting node properties, running editor operations, inspecting project state, or any task that requires interacting with a live Godot editor instance. This works by sending GDScript code through the broker-server's REST API, which forwards it to a connected Hastur Executor plugin inside the Godot editor. Trigger this skill when the user mentions Godot, Godot editor, GDScript execution, scene manipulation, node operations, or any task involving controlling a Godot project remotely, even if they don't explicitly mention "broker" or "remote execution." Also use when the user asks to inspect, query, or modify anything in their Godot project while the editor is running.
+  Execute GDScript code on a running Godot editor or game runtime via the Hastur broker-server HTTP API. Use this skill whenever the user wants to manipulate a Godot editor or running game remotely — creating/modifying scenes, adjusting node properties, running editor operations, inspecting project state, querying live game runtime state (scene tree, physics, FPS, input, variables), or any task that requires interacting with a live Godot instance. The broker-server supports two executor types: "editor" (the editor plugin) and "game" (a GameExecutor autoload running in the game process). Target the game runtime by specifying `type: "game"` in execute requests. Trigger this skill when the user mentions Godot, Godot editor, GDScript execution, scene manipulation, node operations, game runtime inspection, live game state, or any task involving controlling a Godot project remotely, even if they don't explicitly mention "broker" or "remote execution." Also use when the user asks to inspect, query, or modify anything in their Godot project while the editor or game is running.
 ---
 
 # Godot Remote Executor
 
-This skill enables you to execute arbitrary GDScript code on a running Godot editor instance through the Hastur broker-server. The broker-server acts as a bridge: you send HTTP requests to it, and it forwards the code to the Godot editor's Hastur Executor plugin via TCP.
+This skill enables you to execute arbitrary GDScript code on a running Godot editor or game runtime instance through the Hastur broker-server. The broker-server acts as a bridge: you send HTTP requests to it, and it forwards the code to a connected Hastur Executor (editor plugin or game runtime) via TCP.
+
+Executors have a `type` field: `"editor"` for the editor plugin, `"game"` for the GameExecutor autoload running in the game process. Use `type: "game"` to target the live game runtime — useful for inspecting runtime state, scene tree, physics, FPS, input, and variables during gameplay.
 
 ## Prerequisites
 
@@ -49,9 +51,9 @@ For global scope functions (print, push_error, etc.), read:
 For code style conventions, read:
 - `references/gdscript-syntax/gdscript_styleguide.rst.txt` — official style guide
 
-## Step 1: Discover Connected Editors
+## Step 1: Discover Connected Executors
 
-First, check which Godot editors are connected to the broker-server. Run:
+First, check which Godot executors are connected to the broker-server. Run:
 
 ```bash
 curl -s -H "Authorization: Bearer HASTUR_AUTH_TOKEN" HASTUR_BASE_URL/api/executors
@@ -71,15 +73,26 @@ The response looks like:
       "editor_version": "4.6.0",
       "supported_languages": ["gdscript"],
       "connected_at": "2026-03-28T10:00:00.000Z",
-      "status": "connected"
+      "status": "connected",
+      "type": "editor"
+    },
+    {
+      "id": "b2c3d4e5-f6a7-8901-bcde-f12345678901",
+      "project_name": "my-game",
+      "project_path": "C:/Users/dev/projects/my-game",
+      "editor_pid": 67890,
+      "plugin_version": "0.1",
+      "editor_version": "4.6.0",
+      "supported_languages": ["gdscript"],
+      "connected_at": "2026-03-28T10:01:00.000Z",
+      "status": "connected",
+      "type": "game"
     }
   ]
 }
 ```
 
-If `data` is empty, the hint field will explain why — the user needs to enable the Hastur Executor plugin in their Godot editor.
-
-Note the `id` (executor_id) for targeting specific editors.
+Each executor has a `type` field: `"editor"` or `"game"`. Note the `id` and `type` for targeting specific executors.
 
 ## Step 2: Execute Code
 
@@ -93,18 +106,32 @@ curl -s -X POST \
   HASTUR_BASE_URL/api/execute
 ```
 
-### Targeting an Editor
+### Targeting an Executor
 
-You can identify the target editor in three ways (provide exactly one):
+You can identify the target executor in three ways (provide exactly one):
 - `executor_id` — exact match, most reliable
 - `project_name` — fuzzy substring match on the project name
 - `project_path` — fuzzy substring match on the project path
 
-When only one editor is connected, `project_name` is convenient. When multiple editors are connected, use `executor_id` to be precise.
+When only one executor is connected, `project_name` is convenient. When multiple executors are connected, use `executor_id` to be precise.
+
+### Filtering by Type
+
+Add `"type": "editor"` or `"type": "game"` to the request body to restrict the executor search to a specific type:
+
+```bash
+curl -s -X POST \
+  -H "Authorization: Bearer HASTUR_AUTH_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"code": "executeContext.output(\"fps\", str(Engine.get_frames_per_second()))", "project_name": "my-game", "type": "game"}' \
+  HASTUR_BASE_URL/api/execute
+```
+
+This is useful when both an editor and a game executor are connected for the same project — use `type: "game"` to target the live game process, or `type: "editor"` to target the editor.
 
 ### Execution Modes
 
-The Hastur Executor supports two modes, determined automatically by whether the code contains `extends`:
+The Hastur Executor supports two modes (for both editor and game executors), determined automatically by whether the code contains `extends`:
 
 **Snippet mode** (no `extends` keyword): Code is automatically wrapped in a `@tool extends RefCounted` class with a `run()` method. The `executeContext` variable is available as an `ExecutionContext` object with an `output(key, value)` method for returning structured results.
 
@@ -274,7 +301,7 @@ Note: The `@` prefix classes are special:
 
 For complex tasks, follow this iterative pattern:
 
-1. **Discover** — Query `/api/executors` to find available editors
+1. **Discover** — Query `/api/executors` to find available executors (note their `type`: editor or game)
 2. **Read reference** — If unsure about GDScript syntax, read the syntax docs first
 3. **Look up API** — If unsure about a Godot class/method, read the relevant class reference
 4. **Write code** — Compose the GDScript snippet, using `executeContext.output()` to return results
@@ -334,6 +361,22 @@ Code runs inside the Godot editor as a `@tool` script. This means:
 - `EditorInterface` is available as a singleton via `Engine.get_singleton('EditorInterface')` for editor operations
 - The code runs on the main thread — avoid infinite loops or heavy computation
 - Changes to nodes/scenes are reflected in real-time in the editor
+
+### Game Runtime Environment
+
+When targeting a game executor (`type: "game"`), code runs inside the running game process via the `GameExecutor` autoload. This means:
+- You have full access to the live game scene tree via `get_tree()`
+- All game nodes, runtime variables, physics state, and input are accessible
+- `EditorInterface` is **not available** (this is the game process, not the editor)
+- The code runs on the main thread — avoid infinite loops or heavy computation
+- Use this for inspecting live game state: FPS, scene tree, node properties, signals, physics bodies, etc.
+
+Example game runtime queries:
+```gdscript
+executeContext.output("fps", str(Engine.get_frames_per_second()))
+executeContext.output("current_scene", str(get_tree().current_scene.name))
+executeContext.output("child_count", str(get_tree().current_scene.get_child_count()))
+```
 
 ### Snippet Mode Details
 

@@ -23,20 +23,22 @@ export class ExecutorManager {
 		return this.executors.get(id)
 	}
 
-	findByProjectName(name: string): ExecutorInfo | undefined {
+	findByProjectName(name: string, type?: 'editor' | 'game'): ExecutorInfo | undefined {
 		const lower = name.toLowerCase()
 		for (const executor of this.executors.values()) {
 			if (executor.project_name.toLowerCase().includes(lower) && executor.status === 'connected') {
+				if (type && executor.type !== type) continue
 				return executor
 			}
 		}
 		return undefined
 	}
 
-	findByProjectPath(path: string): ExecutorInfo | undefined {
+	findByProjectPath(path: string, type?: 'editor' | 'game'): ExecutorInfo | undefined {
 		const lower = path.toLowerCase()
 		for (const executor of this.executors.values()) {
 			if (executor.project_path.toLowerCase().includes(lower) && executor.status === 'connected') {
+				if (type && executor.type !== type) continue
 				return executor
 			}
 		}

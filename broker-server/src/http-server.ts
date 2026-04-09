@@ -57,7 +57,7 @@ export function createHttpApp(
 	})
 
 	app.post('/api/execute', async (req: Request, res: Response) => {
-		const { code, executor_id, project_name, project_path } = req.body
+		const { code, executor_id, project_name, project_path, type } = req.body
 
 		if (!code) {
 			res.status(400).json({
@@ -72,25 +72,29 @@ export function createHttpApp(
 			res.status(400).json({
 				success: false,
 				error: 'No executor identifier provided',
-				hint: 'Provide one of: executor_id (exact match), project_name (fuzzy match), or project_path (fuzzy match) to target a specific Godot editor. Use GET /api/executors to see connected editors.',
+				hint: 'Provide one of: executor_id (exact match), project_name (fuzzy match), or project_path (fuzzy match) to target a specific executor. Optionally specify type: "editor" or "game".',
 			})
 			return
 		}
 
+		const executorType = type as ('editor' | 'game') | undefined
 		let executor
 		if (executor_id) {
 			executor = executorManager.findById(executor_id)
+			if (executor && executorType && executor.type !== executorType) {
+				executor = undefined
+			}
 		} else if (project_name) {
-			executor = executorManager.findByProjectName(project_name)
+			executor = executorManager.findByProjectName(project_name, executorType)
 		} else if (project_path) {
-			executor = executorManager.findByProjectPath(project_path)
+			executor = executorManager.findByProjectPath(project_path, executorType)
 		}
 
 		if (!executor) {
 			res.status(404).json({
 				success: false,
 				error: 'No connected Hastur Executor matched the query',
-				hint: 'Use GET /api/executors to list available executors. You can match by executor_id (exact) or project_name/project_path (fuzzy substring match).',
+				hint: 'Use GET /api/executors to list available executors. You can filter by type: "editor" or "game".',
 			})
 			return
 		}

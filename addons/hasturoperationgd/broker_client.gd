@@ -21,11 +21,13 @@ var _project_path: String
 var _editor_pid: int
 var _plugin_version: String
 var _editor_version: String
+var _executor_type: String = "editor"
 
 
-func _init(host: String, port: int) -> void:
+func _init(host: String, port: int, executor_type: String = "editor") -> void:
 	_host = host
 	_port = port
+	_executor_type = executor_type
 	_tcp = StreamPeerTCP.new()
 	_executor = GDScriptExecutor.new()
 	_project_name = ProjectSettings.get_setting("application/config/name", "Unnamed")
@@ -122,7 +124,8 @@ func _send_register() -> void:
 			"editor_pid": _editor_pid,
 			"plugin_version": _plugin_version,
 			"editor_version": _editor_version,
-			"supported_languages": ["gdscript"]
+			"supported_languages": ["gdscript"],
+			"type": _executor_type
 		}
 	}
 	_send_message(msg)

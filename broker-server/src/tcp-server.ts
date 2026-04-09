@@ -157,7 +157,7 @@ export class TcpServer {
 		const ctx = this.connections.get(socketId)
 		if (!ctx) return
 
-		const requiredFields = ['project_name', 'project_path', 'editor_pid']
+		const requiredFields = ['project_name', 'project_path', 'editor_pid', 'type']
 		const missing = requiredFields.filter((f) => data[f] === undefined || data[f] === null || data[f] === '')
 		if (missing.length > 0) {
 			this.sendToSocket(socketId, {
@@ -195,6 +195,7 @@ export class TcpServer {
 			supported_languages: (data.supported_languages as string[]) || [],
 			connected_at: new Date().toISOString(),
 			status: 'connected',
+			type: (data.type as 'editor' | 'game') || 'editor',
 		}
 		this.executorManager.add(executorInfo)
 
