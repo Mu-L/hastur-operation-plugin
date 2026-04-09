@@ -95,10 +95,17 @@ func is_broker_connected() -> bool:
 
 
 func _try_connect() -> void:
+	var status = _tcp.get_status()
+	if status != StreamPeerTCP.STATUS_NONE and status != StreamPeerTCP.STATUS_ERROR:
+		push_warning("BrokerClient: _try_connect called in unexpected status %d, skipping connect_to_host" % status)
+		return
+	if status != StreamPeerTCP.STATUS_NONE:
+		_tcp.disconnect_from_host()
 	_tcp.connect_to_host(_host, _port)
 
 
 func _handle_disconnect() -> void:
+	push_warning("BrokerClient: connection lost to %s:%d (executor_id=%s)" % [_host, _port, _executor_id])
 	_connected = false
 	_executor_id = ""
 	_buffer = ""
@@ -166,6 +173,7 @@ func _handle_register_result(data: Dictionary) -> void:
 		_executor_id = str(data.get("id", ""))
 		connection_established.emit(_executor_id)
 	else:
+		push_warning("BrokerClient: registration rejected by broker: %s" % str(data))
 		_tcp.disconnect_from_host()
 		_connected = false
 
@@ -193,5 +201,10 @@ func _handle_execute(data: Dictionary) -> void:
 
 
 func _send_message(msg: Dictionary) -> void:
+	if _tcp.get_status() != StreamPeerTCP.STATUS_CONNECTED:
+		push_warning("BrokerClient: _send_message called while not connected (status=%d), dropping message: %s" % [_tcp.get_status(), msg.get("type", "unknown")])
+		return
 	var json_str = JSON.stringify(msg) + "\n"
-	_tcp.put_data(json_str.to_utf8_buffer())
+	var err = _tcp.put_data(json_str.to_utf8_buffer())
+	if err != OK:
+		push_warning("BrokerClient: put_data failed with error %d for message type: %s" % [err, msg.get("type", "unknown")])

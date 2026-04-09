@@ -3,3 +3,5 @@
 /android/
 nul
 .vscode
+.temp
+tmp_execute.json
