@@ -23,7 +23,7 @@ func _ready() -> void:
 	_executor = GDScriptExecutor.new()
 	var broker_host = HasturOperationGDPluginSettings.get_broker_host()
 	var broker_port = HasturOperationGDPluginSettings.get_broker_port()
-	_broker_client = BrokerClient.new(broker_host, broker_port, "editor")
+	_broker_client = BrokerClient.new(broker_host, broker_port, "editor", _editor_plugin)
 	_broker_client.connection_established.connect(_on_broker_connected)
 	_broker_client.connection_lost.connect(_on_broker_disconnected)
 	_broker_client.remote_execution_completed.connect(_on_remote_execution)

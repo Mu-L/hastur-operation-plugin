@@ -108,14 +108,15 @@ var is_playing = ei.is_playing_scene()
 executeContext.output("is_playing", str(is_playing))
 ```
 
-**2. Check if `game_executor.gd` is registered as an Autoload** — Execute on the editor:
+**2. Check if `game_executor.gd` is registered as an Autoload** — Read the `[autoload]` section from the project's `project.godot` file. There is no runtime API to list registered autoloads (`ProjectSettings.get_setting("autoload")` returns `null` in the editor). The `project.godot` file is located at the project root and contains autoload entries like:
 
-```gdscript
-var autoloads = ProjectSettings.get_setting("autoload")
-executeContext.output("autoloads", str(autoloads))
+```ini
+[autoload]
+
+GameExecutor="*uid://7yjc3ixh2laf"
 ```
 
-Look for an entry containing `game_executor` or `GameExecutor` in the autoload dictionary.
+Look for an entry containing `game_executor` or `GameExecutor`.
 
 **3. Ask the user before taking action** — Based on the diagnostics above:
 
@@ -130,20 +131,19 @@ Look for an entry containing `game_executor` or `GameExecutor` in the autoload d
 
 **4. Execute user-approved actions** — Only after the user confirms:
 
-- **To add the GameExecutor autoload**, execute on the editor:
+- **To add an Autoload**, use `executeContext.editor_plugin.add_autoload_singleton()`. For example, to add GameExecutor:
   ```gdscript
-  var autoloads = ProjectSettings.get_setting("autoload")
-  if autoloads is Dictionary:
-  	var updated = autoloads.duplicate()
-  	updated["GameExecutor"] = "*res://addons/hasturoperationgd/game_executor.gd"
-  	ProjectSettings.set_setting("autoload", updated)
-  	var err = ProjectSettings.save()
-  	executeContext.output("save_result", str(err))
-  	if err == OK:
-  		executeContext.output("status", "GameExecutor autoload added successfully. Restart the game for it to take effect.")
-  	else:
-  		executeContext.output("status", "Failed to save project settings: error " + str(err))
+  executeContext.editor_plugin.add_autoload_singleton("GameExecutor", "res://addons/hasturoperationgd/game_executor.gd")
+  executeContext.output("result", "done")
   ```
+
+- **To remove an Autoload**, use `executeContext.editor_plugin.remove_autoload_singleton()`. For example, to remove GameExecutor:
+  ```gdscript
+  executeContext.editor_plugin.remove_autoload_singleton("GameExecutor")
+  executeContext.output("result", "done")
+  ```
+
+  Both methods update `project.godot` automatically. No need to manually modify project settings or call `ProjectSettings.save()`.
 
 - **To start the game**, execute on the editor:
   ```gdscript

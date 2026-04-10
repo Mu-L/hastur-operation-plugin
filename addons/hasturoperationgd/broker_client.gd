@@ -24,10 +24,14 @@ var _editor_version: String
 var _executor_type: String = "editor"
 
 
-func _init(host: String, port: int, executor_type: String = "editor") -> void:
+var _editor_plugin_ref = null
+
+
+func _init(host: String, port: int, executor_type: String = "editor", editor_plugin = null) -> void:
 	_host = host
 	_port = port
 	_executor_type = executor_type
+	_editor_plugin_ref = editor_plugin
 	_tcp = StreamPeerTCP.new()
 	_executor = GDScriptExecutor.new()
 	_project_name = ProjectSettings.get_setting("application/config/name", "Unnamed")
@@ -185,7 +189,7 @@ func _handle_execute(data: Dictionary) -> void:
 	var request_id = str(data.get("request_id", ""))
 	var code = str(data.get("code", ""))
 	var start_time = Time.get_ticks_msec()
-	var result = _executor.execute_code(code)
+	var result = _executor.execute_code(code, {}, _editor_plugin_ref)
 	var end_time = Time.get_ticks_msec()
 	var duration_ms = end_time - start_time
 	var msg = {
