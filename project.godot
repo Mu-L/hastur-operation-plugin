@@ -8,9 +8,6 @@
 
 config_version=5
 
-autoload={
-"GameExecutor": "*res://addons/hasturoperationgd/game_executor.gd"
-}
 
 [application]
 
@@ -18,6 +15,10 @@ config/name="hastur-operation-plugin"
 run/main_scene="uid://ba3ji60uq0fef"
 config/features=PackedStringArray("4.6", "Forward Plus")
 config/icon="res://icon.svg"
+
+[autoload]
+
+GameExecutor="*uid://7yjc3ixh2laf"
 
 [dotnet]
 
