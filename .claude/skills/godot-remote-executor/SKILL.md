@@ -94,6 +94,74 @@ The response looks like:
 
 Each executor has a `type` field: `"editor"` or `"game"`. Note the `id` and `type` for targeting specific executors.
 
+## Step 1.5: Game Runtime Not Available — Auto-Recovery
+
+When the user's task requires targeting the game runtime (`type: "game"`) but no game executor appears in `/api/executors`, and an editor executor **is** connected, follow this recovery flow before reporting failure. This is a common situation — the user simply hasn't started the game or hasn't added the GameExecutor autoload yet.
+
+### Recovery Steps
+
+**1. Check if the game is currently running** — Execute code on the editor to inspect the game process state:
+
+```gdscript
+var ei = Engine.get_singleton('EditorInterface')
+var is_playing = ei.is_playing_scene()
+executeContext.output("is_playing", str(is_playing))
+```
+
+**2. Check if `game_executor.gd` is registered as an Autoload** — Execute on the editor:
+
+```gdscript
+var autoloads = ProjectSettings.get_setting("autoload")
+executeContext.output("autoloads", str(autoloads))
+```
+
+Look for an entry containing `game_executor` or `GameExecutor` in the autoload dictionary.
+
+**3. Ask the user before taking action** — Based on the diagnostics above:
+
+- **If the game is not running AND the autoload is missing:** Tell the user both issues and ask what they'd like to do:
+  > "No game runtime is connected. The game is not currently running, and `game_executor.gd` is not registered as an Autoload. Would you like me to:\n1. Add `game_executor.gd` as an Autoload and then start the game\n2. Just add the Autoload (you'll start the game yourself)\n3. Just start the game (but it won't connect without the Autoload)"
+
+- **If the game is not running but the autoload IS configured:** Ask:
+  > "No game runtime is connected. The GameExecutor autoload is configured, but the game isn't running. Would you like me to start the game from the editor?"
+
+- **If the game IS running but no game executor appeared:** The game might still be starting up. Wait a few seconds and re-check `/api/executors`. If it still doesn't appear, the autoload might be missing — ask the user:
+  > "The game appears to be running but no game executor connected. The GameExecutor autoload may not be registered. Would you like me to add it to the project settings? (You'll need to restart the game afterwards.)"
+
+**4. Execute user-approved actions** — Only after the user confirms:
+
+- **To add the GameExecutor autoload**, execute on the editor:
+  ```gdscript
+  var autoloads = ProjectSettings.get_setting("autoload")
+  if autoloads is Dictionary:
+  	var updated = autoloads.duplicate()
+  	updated["GameExecutor"] = "*res://addons/hasturoperationgd/game_executor.gd"
+  	ProjectSettings.set_setting("autoload", updated)
+  	var err = ProjectSettings.save()
+  	executeContext.output("save_result", str(err))
+  	if err == OK:
+  		executeContext.output("status", "GameExecutor autoload added successfully. Restart the game for it to take effect.")
+  	else:
+  		executeContext.output("status", "Failed to save project settings: error " + str(err))
+  ```
+
+- **To start the game**, execute on the editor using the Debug menu:
+  ```gdscript
+  var ei = Engine.get_singleton('EditorInterface')
+  ei.play_main_scene()
+  ```
+  Or trigger via the menu bar's Debug menu if more control is needed.
+
+- **To stop the game:**
+  ```gdscript
+  var ei = Engine.get_singleton('EditorInterface')
+  ei.stop_playing_scene()
+  ```
+
+### Important: Always Ask First
+
+Never start the game or modify project settings without the user's explicit approval. These are significant actions that can disrupt the user's workflow. Present the situation clearly and let the user decide.
+
 ## Step 2: Execute Code
 
 Send GDScript code to a connected editor via POST request:

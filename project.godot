@@ -15,6 +15,10 @@ run/main_scene="uid://ba3ji60uq0fef"
 config/features=PackedStringArray("4.6", "Forward Plus")
 config/icon="res://icon.svg"
 
+[autoload]
+
+GameExecutor="*uid://7yjc3ixh2laf"
+
 [dotnet]
 
 project/assembly_name="hastur-operation-plugin"
